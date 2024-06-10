@@ -11,6 +11,8 @@ RUN echo "[mysqld] \n\
 skip-networking=0 \n\
 skip-bind-address" >> /etc/mysql/my.cnf
 
+COPY ./conf/dump.sql /tmp/dump.sql
+
 RUN if [ -f backup.sql ]; then \
         mariadb -uroot -p$WORDPRESS_ROOT_PASSWORD $WORDPRESS_DATABASE < backup.sql; \
     fi && \
@@ -22,6 +24,7 @@ RUN if [ -f backup.sql ]; then \
     CREATE USER 'root'@'%' IDENTIFIED BY '$WORDPRESS_ROOT_PASSWORD'; \
     GRANT ALL ON *.* TO 'root'@'%' IDENTIFIED BY '$WORDPRESS_ROOT_PASSWORD' WITH GRANT OPTION; \
     FLUSH PRIVILEGES;" && \
+    mariadb -u root $WORDPRESS_DATABASE < /tmp/dump.sql && \
     service mariadb stop
 
 CMD ["mysqld_safe"]
